@@ -30,7 +30,8 @@ void readFiles(string inputFile, coordinates coords[numberCoords])
 	}
 	while (!infile.eof())
 	{
-		getline(infile, word);
+		getline(infile, word);//Each set of co-odrinates starts with the map name. This is used to prevent the program trying 
+		to add the map name to the co-ordinate array.
 			for (int i = 0; i < 9; i++)
 			{
 				infile >> coords[i].x >> coords[i].y;
