@@ -1,4 +1,4 @@
-// a star visual.cpp: A program using the TL-Engine
+// A Star Visual.cpp: A program using the TL-Engine
 //Josh Stone JStone3
 
 #include <TL-Engine.h>	// TL-Engine include file and namespace
