@@ -41,19 +41,19 @@ void ReadFiles(string inputFile, coordinates coords[NUMBER_COORDS])
 	while (!infile.eof())
 	{
 		getline(infile, word);
-			for (int i = 0; i < 9; i++)
+		for (int i = 0; i < 9; i++)
+		{
+			infile >> coords[i].x >> coords[i].y;
+		}
+		infile >> word1;
+		for (int i = 9; i < NUMBER_COORDS; i++)
+		{
+			infile >> coords[i].x >> coords[i].y;
+			if (i == 22)
 			{
-				infile >> coords[i].x >> coords[i].y;
+				return;
 			}
-			infile >> word1;
-			for (int i = 9; i < NUMBER_COORDS; i++)
-			{
-				infile >> coords[i].x >> coords[i].y;				
-				if (i == 22)
-					{
-						return;
-					}
-			}	
+		}
 	}
 	infile.close();
 }
@@ -72,42 +72,42 @@ void ResetGrid(IMesh* squareMesh, IModel* mapSquares[MAP_ROWS][MAP_COLUMNS], str
 	}
 	//Each square has a different skin based on its cost which is retrieved from the appropriate map array.
 	for (int i = 0; i < MAP_ROWS; i++)//rows 
-		{
+	{
 		for (int j = 0; j < MAP_COLUMNS; j++)//collums 
+		{
+			if (mapArray[MAP_ARRAY_OFFSET - i][j] == 0)
 			{
-				if (mapArray[MAP_ARRAY_OFFSET - i][j] == 0)
-				{
-					x = i;
-					y = j;
-					mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
-					mapSquares[i][j]->SetSkin(wall);
-				}
-				if (mapArray[MAP_ARRAY_OFFSET - i][j] == 1)
-				{
-					x = i;
-					y = j;
-					mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
-					mapSquares[i][j]->SetSkin(open);
-				}
-
-				if (mapArray[MAP_ARRAY_OFFSET - i][j] == 2)
-				{
-					x = i;
-					y = j;
-					mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
-					mapSquares[i][j]->SetSkin(wood);
-				}
-				if (mapArray[MAP_ARRAY_OFFSET - i][j] == 3)
-				{
-					x = i;
-					y = j;
-					mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
-					mapSquares[i][j]->SetSkin(water);
-				}
+				x = i;
+				y = j;
+				mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
+				mapSquares[i][j]->SetSkin(wall);
 			}
-		}		
-		mapSquares[mapStart.y][mapStart.x]->SetSkin(start);
-		mapSquares[mapEnd.y][mapEnd.x]->SetSkin(end);
+			if (mapArray[MAP_ARRAY_OFFSET - i][j] == 1)
+			{
+				x = i;
+				y = j;
+				mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
+				mapSquares[i][j]->SetSkin(open);
+			}
+
+			if (mapArray[MAP_ARRAY_OFFSET - i][j] == 2)
+			{
+				x = i;
+				y = j;
+				mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
+				mapSquares[i][j]->SetSkin(wood);
+			}
+			if (mapArray[MAP_ARRAY_OFFSET - i][j] == 3)
+			{
+				x = i;
+				y = j;
+				mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
+				mapSquares[i][j]->SetSkin(water);
+			}
+		}
+	}
+	mapSquares[mapStart.y][mapStart.x]->SetSkin(start);
+	mapSquares[mapEnd.y][mapEnd.x]->SetSkin(end);
 }
 //Function used to reset camera. 
 void cameraReset(ICamera* &camera)
@@ -119,12 +119,12 @@ void cameraReset(ICamera* &camera)
 void main()
 {
 	// Create a 3D engine (using TLX engine here) and open a window for it
-	I3DEngine* myEngine = New3DEngine( kTLX );
+	I3DEngine* myEngine = New3DEngine(kTLX);
 	myEngine->StartWindowed();
 	myEngine->SetWindowCaption("A star visual");
-	 
+
 	// Add default folder for meshes and other media
-	myEngine->AddMediaFolder( ".//aStarMedia" );
+	myEngine->AddMediaFolder(".//aStarMedia");
 
 	/**** Set up your scene here ****/
 	//Array used to hold all coordinates of every node for both maps.
@@ -198,9 +198,8 @@ void main()
 	dStart.x = coords[9].x;
 	dStart.y = coords[9].y;
 	dEnd.x = coords[22].x;
-	dEnd.y = coords[22].y; 
+	dEnd.y = coords[22].y;
 	//Files storing node costs are read in and store in respective map arrays.
-	ifstream infile;
 	infile.open(mMap);
 	if (!infile)
 	{
@@ -249,7 +248,7 @@ void main()
 			{
 				x = i;
 				y = j;
-				mapSquares[i][j] = squareMesh->CreateModel(y*10, 0, x*10);
+				mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
 				mapSquares[i][j]->SetSkin(wall);
 			}
 			if (mMapArray[MAP_ARRAY_OFFSET - i][j] == OPEN_VALUE)
@@ -257,7 +256,7 @@ void main()
 				x = i;
 				y = j;
 				mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
-				mapSquares[i][j]->SetSkin(open);	
+				mapSquares[i][j]->SetSkin(open);
 			}
 
 			if (mMapArray[MAP_ARRAY_OFFSET - i][j] == WOOD_VALUE)
@@ -278,7 +277,7 @@ void main()
 	}
 	mapSquares[mStart.y][mStart.x]->SetSkin(start);
 	mapSquares[mEnd.y][mEnd.x]->SetSkin(end);
-	
+
 	int pathCounter = 0;//Counter used to record how far along the path the program has moved.
 	int mapNumber = 1;//Variable used to record which map is being displayed.
 	//Bool variables used to record when key presses occur.
@@ -405,7 +404,7 @@ void main()
 		{
 			gameFont->Draw(routeComplete.str(), 500, 80, kRed, kLeft, kVCentre);
 		}
-		
+
 	}
 
 	// Delete the 3D engine now we are finished with it
