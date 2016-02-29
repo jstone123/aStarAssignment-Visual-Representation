@@ -8,7 +8,17 @@
 using namespace std;
 using namespace tle;
 
-const int numberCoords = 23;//Number of coordinates in output file.
+const int NUMBER_COORDS = 23;//Number of coordinates in output file.
+const int MAP_ROWS = 10;//Number of rows in map.
+const int MAP_COLUMNS = 10;//Number of columns in map.
+const int MAP_ARRAY_OFFSET = 9;//An offset is needed for the array because a 2 dimensional array starts from the top left but the map coordinate system starts in the bottom right.
+const int M_MAP_NUMBER = 9;//Number of coordinates in mMap route.
+const int D_MAP_NUMBER = 23;//Total value of number of mMap and dMap coordinates. 
+const int WALL_VALUE = 0;//Terrain value of wall square.
+const int OPEN_VALUE = 1;//Terrain value of open square.
+const int WOOD_VALUE = 2;//Terrain value of wood square.
+const int WATER_VALUE = 3;//Terrain value of water square.
+
 //Coords structure.
 struct coordinates
 {
@@ -16,7 +26,7 @@ struct coordinates
 	int y;
 };
 //Function used to read in the file containing the routes for each map.
-void readFiles(string inputFile, coordinates coords[numberCoords])
+void ReadFiles(string inputFile, coordinates coords[NUMBER_COORDS])
 {
 	string word;
 	string word1;
@@ -30,14 +40,13 @@ void readFiles(string inputFile, coordinates coords[numberCoords])
 	}
 	while (!infile.eof())
 	{
-		getline(infile, word);//Each set of co-odrinates starts with the map name. This is used to prevent the program trying 
-		//to add the map name to the co-ordinate array.
+		getline(infile, word);
 			for (int i = 0; i < 9; i++)
 			{
 				infile >> coords[i].x >> coords[i].y;
 			}
 			infile >> word1;
-			for (int i = 9; i < numberCoords; i++)
+			for (int i = 9; i < NUMBER_COORDS; i++)
 			{
 				infile >> coords[i].x >> coords[i].y;				
 				if (i == 22)
@@ -49,31 +58,31 @@ void readFiles(string inputFile, coordinates coords[numberCoords])
 	infile.close();
 }
 //Function used to set up the grid that represents each map.
-void resetGrid(IMesh* squareMesh, IModel* mapSquares[10][10], string water, string wood, string open, string wall, 
+void ResetGrid(IMesh* squareMesh, IModel* mapSquares[MAP_ROWS][MAP_COLUMNS], string water, string wood, string open, string wall,
 	string start, string end, int mapArray[10][10], coordinates mapStart, coordinates mapEnd)
 {
 	int x;
 	int y;
-	for (int i = 0; i < 10; i++)//rows 
+	for (int i = 0; i < MAP_ROWS; i++)//rows 
 	{
-		for (int j = 0; j < 10; j++)//collums 
+		for (int j = 0; j < MAP_COLUMNS; j++)//collums 
 		{
-			mapSquares[i][j]->SetSkin(open);
+			mapSquares[i][j]->SetSkin(open);//Reset the skin of every square to same skin before applying skin based on terrain cost. 
 		}
 	}
 	//Each square has a different skin based on its cost which is retrieved from the appropriate map array.
-		for (int i = 0; i < 10; i++)//rows 
+	for (int i = 0; i < MAP_ROWS; i++)//rows 
 		{
-			for (int j = 0; j < 10; j++)//collums 
+		for (int j = 0; j < MAP_COLUMNS; j++)//collums 
 			{
-				if (mapArray[9 - i][j] == 0)
+				if (mapArray[MAP_ARRAY_OFFSET - i][j] == 0)
 				{
 					x = i;
 					y = j;
 					mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
 					mapSquares[i][j]->SetSkin(wall);
 				}
-				if (mapArray[9 - i][j] == 1)
+				if (mapArray[MAP_ARRAY_OFFSET - i][j] == 1)
 				{
 					x = i;
 					y = j;
@@ -81,14 +90,14 @@ void resetGrid(IMesh* squareMesh, IModel* mapSquares[10][10], string water, stri
 					mapSquares[i][j]->SetSkin(open);
 				}
 
-				if (mapArray[9 - i][j] == 2)
+				if (mapArray[MAP_ARRAY_OFFSET - i][j] == 2)
 				{
 					x = i;
 					y = j;
 					mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
 					mapSquares[i][j]->SetSkin(wood);
 				}
-				if (mapArray[9 - i][j] == 3)
+				if (mapArray[MAP_ARRAY_OFFSET - i][j] == 3)
 				{
 					x = i;
 					y = j;
@@ -112,15 +121,14 @@ void main()
 	// Create a 3D engine (using TLX engine here) and open a window for it
 	I3DEngine* myEngine = New3DEngine( kTLX );
 	myEngine->StartWindowed();
-
+	myEngine->SetWindowCaption("A star visual");
+	 
 	// Add default folder for meshes and other media
 	myEngine->AddMediaFolder( ".//aStarMedia" );
 
 	/**** Set up your scene here ****/
-	const int mMapNumber = 8;
-	const int dMapnumer = 23;
 	//Array used to hold all coordinates of every node for both maps.
-	coordinates coords[numberCoords];
+	coordinates coords[NUMBER_COORDS];
 	//Variables to hold start and end for each map.
 	coordinates mStart;
 	coordinates mEnd;
@@ -181,7 +189,7 @@ void main()
 	string dMap = "dMap.txt";
 	ifstream infile;
 	//Read in input file and store in coords array.
-	readFiles(inputFile, coords);
+	ReadFiles(inputFile, coords);
 	//Start and end points of each map are then assigned to respective variables.
 	mStart.x = coords[0].x;
 	mStart.y = coords[0].y;
@@ -192,59 +200,59 @@ void main()
 	dEnd.x = coords[22].x;
 	dEnd.y = coords[22].y; 
 	//Files storing node costs are read in and store in respective map arrays.
-	ifstream readFiles;
-	readFiles.open(mMap);
-	if (!readFiles)
+	ifstream infile;
+	infile.open(mMap);
+	if (!infile)
 	{
 		cout << "ERROR: ";
 		cout << "Can't open mMap file\n";
 	}
-	while (!readFiles.eof())
+	while (!infile.eof())
 	{
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < MAP_ROWS; i++)
 		{
-			for (int j = 0; j < 10; j++)
+			for (int j = 0; j < MAP_COLUMNS; j++)
 			{
-				readFiles >> mMapArray[i][j];
+				infile >> mMapArray[i][j];
 				///open the file and put in the and then the new coordinates that we generate will relate to a positon in the array
 			}							//and this will allow us to get the cost of that square.		
 		}
 	}
-	readFiles.close();
+	infile.close();
 	//Files storing node costs are read in and store in respective map arrays.
-	readFiles.open(dMap);
-	if (!readFiles)
+	infile.open(dMap);
+	if (!infile)
 	{
 		cout << "ERROR: ";
 		cout << "Can't open dMap file\n";
 	}
-	while (!readFiles.eof())
+	while (!infile.eof())
 	{
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < MAP_ROWS; i++)
 		{
-			for (int j = 0; j < 10; j++)
+			for (int j = 0; j < MAP_COLUMNS; j++)
 			{
-				readFiles >> dMapArray[i][j];
+				infile >> dMapArray[i][j];
 				///open the file and put in the and then the new coordinates that we generate will relate to a positon in the array
 			}							//and this will allow us to get the cost of that square.		
 		}
 	}
-	readFiles.close();
+	infile.close();
 	//Grid of squares is then created and skins are set according to each squares cost which is gathered from each map array.
 	float x;
 	float y;
-	for (int i = 0; i < 10; i++)//rows 
+	for (int i = 0; i < MAP_ROWS; i++)//rows 
 	{
-		for (int j = 0; j < 10; j++)//collums 
+		for (int j = 0; j < MAP_COLUMNS; j++)//collums 
 		{
-			if (mMapArray[9-i][j] == 0)
+			if (mMapArray[MAP_ARRAY_OFFSET - i][j] == WALL_VALUE)
 			{
 				x = i;
 				y = j;
 				mapSquares[i][j] = squareMesh->CreateModel(y*10, 0, x*10);
 				mapSquares[i][j]->SetSkin(wall);
 			}
-			if (mMapArray[9-i][j] == 1)
+			if (mMapArray[MAP_ARRAY_OFFSET - i][j] == OPEN_VALUE)
 			{
 				x = i;
 				y = j;
@@ -252,14 +260,14 @@ void main()
 				mapSquares[i][j]->SetSkin(open);	
 			}
 
-			if (mMapArray[9-i][j] == 2)
+			if (mMapArray[MAP_ARRAY_OFFSET - i][j] == WOOD_VALUE)
 			{
 				x = i;
 				y = j;
 				mapSquares[i][j] = squareMesh->CreateModel(y * 10, 0, x * 10);
 				mapSquares[i][j]->SetSkin(wood);
 			}
-			if (mMapArray[9-i][j] == 3)
+			if (mMapArray[MAP_ARRAY_OFFSET - i][j] == WATER_VALUE)
 			{
 				x = i;
 				y = j;
@@ -308,7 +316,7 @@ void main()
 		{
 			//Reset all variables involved in displaying a route to allow program to funciton properly after swapping between both maps.
 			mapNumber = 1;
-			resetGrid(squareMesh, mapSquares, water, wood, open, wall, start, end, mMapArray, mStart, mEnd);
+			ResetGrid(squareMesh, mapSquares, water, wood, open, wall, start, end, mMapArray, mStart, mEnd);
 			route1Finished = false;
 			route2Finished = false;
 			pathCounter = 0;
@@ -319,7 +327,7 @@ void main()
 		{
 			//Reset all variables involved in displaying a route to allow program to funciton properly after swapping between both maps.
 			mapNumber = 2;
-			resetGrid(squareMesh, mapSquares, water, wood, open, wall, start, end, dMapArray, dStart, dEnd);
+			ResetGrid(squareMesh, mapSquares, water, wood, open, wall, start, end, dMapArray, dStart, dEnd);
 			route1Finished = false;
 			route2Finished = false;
 			pathCounter = 0;
@@ -362,13 +370,13 @@ void main()
 			{
 				if (mapNumber == 1)
 				{
-					if (pathCounter < 9)
+					if (pathCounter < M_MAP_NUMBER)
 					{
 						mapSquares[coords[pathCounter].y][coords[pathCounter].x]->SetSkin(path);
 						pathCounter++;
 						timer = 0;
 					}
-					if (pathCounter == 9)
+					if (pathCounter == M_MAP_NUMBER)
 					{
 						route1Finished = true;
 					}
@@ -379,13 +387,13 @@ void main()
 					{
 						pathCounter = 9;
 					}
-					if (pathCounter < dMapnumer)
+					if (pathCounter < D_MAP_NUMBER)
 					{
 						mapSquares[coords[pathCounter].y][coords[pathCounter].x]->SetSkin(path);
 						pathCounter++;
 						timer = 0;
 					}
-					if (pathCounter == dMapnumer)
+					if (pathCounter == D_MAP_NUMBER)
 					{
 						route2Finished = true;
 					}
